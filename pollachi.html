@@ -1,0 +1,115 @@
+<html>
+<head>
+    <title>Weather App</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background: #eaf2f8;
+            text-align: center;
+            padding: 50px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            width: 300px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px gray;
+        }
+
+        input {
+            padding: 10px;
+            width: 90%;
+            margin: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 20px;
+            line-height: 2;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h2>Weather App</h2>
+
+    <input id="city" type="text"
+    placeholder="Enter city name">
+
+    <button onclick="getdata()">Search</button>
+
+    <div id="result"></div>
+
+</div>
+
+<script>
+
+function getdata() {
+
+    let place = document.getElementById("city").value.trim();
+
+    if (place === "") {
+        alert("Enter city name");
+        return;
+    }
+
+    fetch("https://geocoding-api.open-meteo.com/v1/search?name=" + encodeURIComponent(place))
+    .then(response => response.json())
+    .then(data => {
+
+        if (!data.results || data.results.length === 0) {
+            document.getElementById("result").innerHTML =
+            "City not found";
+            return;
+        }
+
+        let longitude = data.results[0].longitude;
+        let latitude = data.results[0].latitude;
+
+        weather_details(longitude, latitude);
+
+    })
+    .catch(error => {
+        document.getElementById("result").innerHTML =
+        "Error fetching city data";
+    });
+}
+
+function weather_details(lo, la) {
+
+    fetch("https://api.open-meteo.com/v1/forecast?latitude="
+    + la + "&longitude=" + lo +
+    "&current=temperature_2m,relative_humidity_2m")
+
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById("result").innerHTML =
+        "<h3>Weather Details</h3>" +
+        "Temperature: " + data.current.temperature_2m + " °C<br>" +
+        "Humidity: " + data.current.relative_humidity_2m + " %";
+
+    })
+    .catch(error => {
+        document.getElementById("result").innerHTML =
+        "Weather data not available";
+    });
+}
+
+</script>
+
+</body>
+</html>
